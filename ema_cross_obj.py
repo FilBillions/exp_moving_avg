@@ -9,7 +9,7 @@ class ExpMovingAverageTable(Table):
             self.ma1 = ma1
             self.ma2 = ma2
     
-        def gen_table(self):
+        def gen_table(self, optional_bool=True):
             super().gen_table()
 
             # initialise EMA1 and EMA2
@@ -36,7 +36,7 @@ class ExpMovingAverageTable(Table):
             self.df['Signal'] = np.where(self.df[f'{self.ma1}-day EMA'] < self.df[f'{self.ma2}-day EMA'], -1, self.df['Signal'])
 
             # Model return
-            self.df['Model Return'] = self.df['Return'] * self.df['Signal']
+            self.df['EMA Model Return'] = self.df['Return'] * self.df['Signal']
 
             # Entry column for visualization
             self.df['Entry'] = self.df.Signal.diff()
@@ -45,24 +45,25 @@ class ExpMovingAverageTable(Table):
             self.df.dropna(inplace=True)
 
             # Cumulative Returns
-            self.df['Cumulative Model Return'] = (np.exp(self.df['Model Return'] / 100).cumprod() - 1) * 100
+            self.df['Cumulative EMA Model Return'] = (np.exp(self.df['EMA Model Return'] / 100).cumprod() - 1) * 100
 
             # Recalculate return and cumulative return to include model returns
             self.df['Return'] = (np.log(self.df['Close']).diff()) * 100
             self.df['Cumulative Return'] = (np.exp(self.df['Return'] / 100).cumprod() - 1) * 100
 
             # Formatting the table
-            self.df = round((self.df[['Day Count', 'Open', 'High', 'Low', 'Close', f'{self.ma1}-day EMA', f'{self.ma2}-day EMA', 'Return', 'Cumulative Return', 'Model Return', 'Cumulative Model Return', 'Signal', 'Entry']]), 3)
+            self.df = round((self.df[['Day Count', 'Open', 'High', 'Low', 'Close', f'{self.ma1}-day EMA', f'{self.ma2}-day EMA', 'Return', 'Cumulative Return', 'EMA Model Return', 'Cumulative EMA Model Return', 'Signal', 'Entry']]), 3)
+            if optional_bool:
+                return self.df
+            pass
 
-            return self.df
-
-        def gen_ema_cross_visual(self, model_days):
+        def gen_ema_cross_visual(self, model_days,):
         #parameters for grid size
             plt.rcParams['figure.figsize'] = 12, 8
         #create grid
             plt.grid(True, alpha = .5)
         #plot ticker closing prices and MAs, .iloc for integers
-            plt.plot(self.df.iloc[-model_days:]['Close'], label = f'{self.ticker.upper()}')
+            plt.plot(self.df.iloc[-model_days:]['Close'])
             plt.plot(self.df.iloc[-model_days:][f'{self.ma1}-day EMA'], label = f'{self.ma1}-day EMA')
             plt.plot(self.df.iloc[-model_days:][f'{self.ma2}-day EMA'], label = f'{self.ma2}-day EMA')
         #plotting entry points, .loc for labels
@@ -71,13 +72,13 @@ class ExpMovingAverageTable(Table):
         #plot legend
             plt.legend(['Close', f'{self.ma1}-day EMA', f'{self.ma2}-day EMA', 'Buy Signal', 'Sell Signal'], loc = 2)
        
-        def gen_buyhold_comp(self):
-        #buy/hold plot
-            plt.plot(self.df['Cumulative Return'], label='Buy/Hold')
+        def gen_buyhold_comp(self, ticker):
+        #add buy/hold to legend if it doesn't exist
+            if f'{ticker} Buy/Hold' not in [line.get_label() for line in plt.gca().get_lines()]:
+                plt.plot(self.df['Cumulative Return'], label=f'{ticker} Buy/Hold')
         #model plot
-            plt.plot(self.df['Cumulative Model Return'], label='Model')
+            plt.plot(self.df['Cumulative EMA Model Return'], label=f'{ticker} EMA Model')
             plt.legend(loc=2)
             plt.grid(True, alpha=.5)
-        #print returns
-            print("Cumulative Buy/Hold Return:", round(self.df['Cumulative Return'].iloc[-1], 2))
-            print("Cumulative Model Return:", round(self.df['Cumulative Model Return'].iloc[-1], 2))
+        #print cumulative return if not already printed
+            print(f"{ticker} Cumulative EMA Model Return:", round(self.df['Cumulative EMA Model Return'].iloc[-1], 2))

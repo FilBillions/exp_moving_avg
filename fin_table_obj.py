@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# generates a table with moving averages and crossover signals
+# input a yfinance dataframe
+# generates a simple returns table with daily returns, cumulative returns, and volatility
 class Table:
     def __init__(self, df):
         self.df = df
-        self.ticker = f"{self.df}"
-    def gen_table(self):
+    def gen_table(self, optional_bool=False):
     #adding day count
         day_count = np.arange(1, len(self.df) + 1)
         self.df['Day Count'] = day_count
@@ -28,4 +28,7 @@ class Table:
     # formatting the table
         self.df = round((self.df[['Day Count', 'Open', 'High', 'Low', 'Close', 'Return', 'Cumulative Return', 'Volatility']]), 3)
 
-        return self.df[self.df['Day Count'] < 23]
+        return self.df
+    
+    def print_cumulative_return(self, ticker):
+        print(f"{ticker} Cumulative Buy/Hold Return:", round(self.df['Cumulative Return'].iloc[-1], 2))
