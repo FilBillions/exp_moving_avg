@@ -63,14 +63,14 @@ class ExpMovingAverageTable(Table):
         pass
 
     def gen_ema_cross_visual(self, model_days,):
-    #parameters for grid size
+#parameters for grid size
         self.df.index = pd.to_datetime(self.df.index).strftime('%Y-%m-%d-%H:%M')
         fig = plt.figure(figsize=(12, 8))
 
 # Use the actual index for x-values
         x_values = range(len(self.df.iloc[-model_days:]))
 
-    #plot ticker closing prices and MAs, .iloc for integers
+#plot ticker closing prices and MAs, .iloc for integers
         plt.plot(x_values, self.df.iloc[-model_days:]['Close'])
         plt.plot(x_values, self.df.iloc[-model_days:][f'{self.ma1}-day EMA'], label = f'{self.ma1}-day EMA')
         plt.plot(x_values, self.df.iloc[-model_days:][f'{self.ma2}-day EMA'], label = f'{self.ma2}-day EMA')
@@ -99,8 +99,8 @@ class ExpMovingAverageTable(Table):
     
 #print statements        
         print(f'from {self.df.index[-model_days]} to {self.df.index[-1]}')
-        print(f'count of buy signals: {len(self.df[self.df["Entry"] == 2]) / 2}')
-        print(f'count of sell signals: {len(self.df[self.df["Entry"] == -2]) / 2}')
+        print(f'count of buy signals: {len(self.df[self.df["Entry"] == 2])}')
+        print(f'count of sell signals: {len(self.df[self.df["Entry"] == -2])}')
 
     def gen_buyhold_comp(self, ticker):
         labels = pd.to_datetime(self.df.index).strftime('%Y-%m-%d')
@@ -111,7 +111,7 @@ class ExpMovingAverageTable(Table):
         if f'{ticker} Buy/Hold' not in [line.get_label() for line in plt.gca().get_lines()]:
             plt.plot(x_values, self.df['Cumulative Return'], label=f'{ticker} Buy/Hold')
 # model plot
-        plt.plot(x_values, self.df['Cumulative EMA Model Return'], label=f'{ticker} MACD Model')
+        plt.plot(x_values, self.df['Cumulative EMA Model Return'], label=f'{ticker} EMA Model')
 
 # Set x-axis to date values and make it so they dont spawn too many labels
         plt.xticks(ticks=x_values, labels=labels, rotation=45)
