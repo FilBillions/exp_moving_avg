@@ -144,6 +144,7 @@ class ExpMovingAverageTable():
                 plt.grid(True, alpha=.5)
                 # print cumulative Return % if not already printed
                 print(f"{self.ticker} Cumulative EMA Model Return %:", round(self.df['Cumulative EMA Model Return %'].iloc[-1], 2))
+                print(f"{self.ticker} Cumulative Return %:", round(self.df['Cumulative Return %'].iloc[-1], 2))
                 print(f" from {self.df.index[0]} to {self.df.index[-1]}")
 
         def sharpe(self):
