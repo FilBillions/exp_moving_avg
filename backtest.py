@@ -31,57 +31,76 @@ class Backtest():
             if isinstance(number_check, int):
                 print("-" * 50)
                 print(f"Argument: {sys.argv[1]} -> provided integer, not ticker")
-                print("Usage: python backtest.py <ticker symbol> <number_of_iterations> <interval>")
+                print("Usage: python backtest.py <ticker symbol> <moving average1> <moving average2> <number_of_iterations> <interval>")
                 print("-" * 50)
                 sys.exit(1)
-        if len(sys.argv) >= 5:
+        if len(sys.argv) >= 7:
             # checking amount of inputs
             print("-" * 50)
             print("Invalid argument. Too many inputs")
-            print("Usage: python backtest.py <ticker symbol> <number_of_iterations> <interval>")
+            print("Usage: python backtest.py <ticker symbol> <moving average1> <moving average2> <number_of_iterations> <interval>")
             print("-" * 50)
             sys.exit(1)
         if len(sys.argv) == 2:
             self.arg = str(sys.argv[1])
-            self.arg2 = 1
-            self.arg3 = '1d'
-        elif len(sys.argv) == 3:
+            # arg2 is moving average1, arg 3 is moving average2, arg4 is iterations, arg 5 is interval
+            self.arg2 = 50
+            self.arg3 = 250
+            self.arg4 = 1
+            self.arg5 = '1d'
+        elif len(sys.argv) == 4:
             try:
                 self.arg = str(sys.argv[1])
                 self.arg2 = int(sys.argv[2])
-                self.arg3 = '1d'
+                self.arg3 = int(sys.argv[3])
+                self.arg4 = 1
+                self.arg5 = '1d'
             except ValueError:
                 print("-" * 50)
                 print("Invalid argument. Please provide a valid ticker and integer for the number of iterations. This should be a positive integer")
-                print("Usage: python backtest.py <ticker symbol> <number_of_iterations> <interval>")
+                print("Usage: python backtest.py <ticker symbol> <moving average1> <moving average2> <number_of_iterations> <interval>")
                 print("-" * 50)
                 sys.exit(1)
-        elif len(sys.argv) >3:
-        # Check if third argument is an integer, it should not be
+        elif len(sys.argv) == 5:
+            try:
+                self.arg = str(sys.argv[1])
+                self.arg2 = int(sys.argv[2])
+                self.arg3 = int(sys.argv[3])
+                self.arg4 = int(sys.argv[4])
+                self.arg5 = '1d'
+            except ValueError:
+                print("-" * 50)
+                print("Invalid argument. Please provide a valid ticker, integer, and interval for the number of iterations. This should be a positive integer")
+                print("Usage: python backtest.py <ticker symbol> <moving average1> <moving average2> <number_of_iterations> <interval>")
+                print("-" * 50)
+        elif len(sys.argv) > 5:
+            # Check if 5th argument is an integer, it should not be
             number_check = None
             try:
-                number_check = int(sys.argv[3])
+                number_check = int(sys.argv[5])
             except ValueError:
                 pass
             if isinstance(number_check, int):
                 print("-" * 50)
-                print(f"Argument: {sys.argv[3]} -> provided integer, not interval")
-                print("Usage: python backtest.py <ticker symbol> <number_of_iterations> <interval>")
+                print(f"Argument: {sys.argv[5]} -> provided integer, not interval")
+                print("Usage: python backtest.py <ticker symbol> <moving average1> <moving average2> <number_of_iterations> <interval>")
                 print("-" * 50)
                 sys.exit(1)
             try:
                 self.arg = str(sys.argv[1])
                 self.arg2 = int(sys.argv[2])
-                self.arg3 = str(sys.argv[3])
+                self.arg3 = int(sys.argv[3])
+                self.arg4 = int(sys.argv[4])
+                self.arg5 = str(sys.argv[5])
             except ValueError:
                 print("-" * 50)
                 print("Invalid argument. Please provide a valid ticker, integer, and interval for the number of iterations. This should be a positive integer")
-                print("Usage: python backtest.py <ticker symbol> <number_of_iterations> <interval>")
+                print("Usage: python backtest.py <ticker symbol> <moving average1> <moving average2> <number_of_iterations> <interval>")
                 print("-" * 50)
         else:
             print("-" * 50)
             print("No argument provided. Please provide a valid ticker and integer for the number of iterations. This should be a positive integer")
-            print("Usage: python backtest.py <ticker symbol> <number_of_iterations> <interval>")
+            print("Usage: python backtest.py <ticker symbol> <moving average1> <moving average2 > <number_of_iterations> <interval>")
             print("-" * 50)
             sys.exit(1)
 
@@ -90,7 +109,7 @@ class Backtest():
         self.short_days_list =['15m', '30m']
         self.medium_days_list = ['60m', '90m', '1h']
         self.long_days_list = ['1d', '5d', '1wk', '1mo', '3mo']
-        self.interval = self.arg3
+        self.interval = self.arg5
         self.today = datetime.now()
         if self.interval in self.long_days_list:
             self.universe = datetime.strptime("2000-01-01", "%Y-%m-%d")
@@ -119,8 +138,6 @@ class Backtest():
 # Declare df outside of the loop to avoid re-downloading data each iteration
         print(f"Downloading {self.ticker}...")
         self.df = yf.download(self.ticker, start = self.universe, end = str(date.today() - timedelta(1)), interval = self.interval, multi_level_index=False, ignore_tz=True)
-        print(self.df.index)
-        print(type(self.df.index[0]))
         #Check if input ticker is a valid ticker
         if self.df.empty:
             print("-" * 50)
@@ -134,8 +151,8 @@ class Backtest():
             self.spydf = yf.download('SPY', start = self.universe, end = str(date.today() - timedelta(1)), interval = self.interval, multi_level_index=False, ignore_tz=True)
 
     def backtest(self):
-        for i in range(self.arg2):
-            print(f"Backtest {i + 1} of {self.arg2}...")
+        for i in range(self.arg4):
+            print(f"Backtest {i + 1} of {self.arg4} | MA1={self.arg2} | MA2={self.arg3}...")
             if self.interval in self.long_days_list:
                 random_input = random.randint(0, (self.end_date_range - self.universe).days)
                 input_start_date = pd.to_datetime(self.universe + timedelta(days=random_input))
@@ -149,7 +166,7 @@ class Backtest():
                 # Testing Modules for a specific date
                 #input_start_date = "2000-11-08"
                 #input_end_date = "2001-11-08"
-                model = ExpMovingAverageTable(ticker=self.ticker, interval=self.interval, start=self.universe, optional_df=self.df)
+                model = ExpMovingAverageTable(ticker=self.ticker, ma1=self.arg2, ma2=self.arg3, interval=self.interval, start=self.universe, optional_df=self.df)
                 print(f"Input Start Date: {input_start_date}, Input End Date: {input_end_date}")
                 model.run_algo(start_date=input_start_date, end_date=input_end_date, return_table=False)
                 real_start_date = model.df.index[0]  # Get the first date in the DataFrame

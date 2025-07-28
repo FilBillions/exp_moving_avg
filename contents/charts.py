@@ -46,15 +46,29 @@ def linear_regression(object):
 
 def visual(object):
     #how many oscilattors
-    fig = make_subplots(rows=1, cols=1, shared_xaxes=True, row_heights=[1], vertical_spacing=0.01, subplot_titles=("Candlesticks with Buy/Sell Signals"))
+    fig = make_subplots(rows=1, cols=1, shared_xaxes=True, row_heights=[2], vertical_spacing=0.01, subplot_titles=("Candlesticks with Buy/Sell Signals",))
     
     # Candlestick
     fig.add_trace(go.Candlestick(x=object.df.index, open=object.df['Open'], high=object.df['High'], low=object.df['Low'], close=object.df['Close'], name='Candlestick'))
     
     # Buy and Sell Signals
-    fig.add_trace(go.Scatter(x=object.df.index, y=object.df['Buy Signal'], mode='markers', marker=dict(symbol='triangle-up', size=10, color='green'), name='Buy Signal'))
-    fig.add_trace(go.Scatter(x=object.df.index, y=object.df['Sell Signal'], mode='markers', marker=dict(symbol='triangle-down', size=10, color='red'), name='Sell Signal'))
+    # Place Buy Signal markers on the ma1 EMA line
+    fig.add_trace(go.Scatter(
+        x=object.df.index,
+        y=np.where(object.df['Buy Signal'].notna(), object.df[f"{object.ma1}-day EMA"], np.nan),
+        mode='markers',
+        marker=dict(symbol='triangle-up', size=20, color='green'),
+        name='Buy Signal (on EMA)'
+    ))
 
+    # Place Sell Signal markers on the ma1 EMA line
+    fig.add_trace(go.Scatter(
+        x=object.df.index,
+        y=np.where(object.df['Sell Signal'].notna(), object.df[f"{object.ma1}-day EMA"], np.nan),
+        mode='markers',
+        marker=dict(symbol='triangle-down', size=20, color='red'),
+        name='Sell Signal (on EMA)'
+    ))
     # Add MAs
     fig.add_trace(go.Scatter(x=object.df.index, y=object.df[f"{object.ma1}-day EMA"], mode='lines', name=f"{object.ma1}-day EMA", line=dict(color='blue', width=2)))
     fig.add_trace(go.Scatter(x=object.df.index, y=object.df[f"{object.ma2}-day EMA"], mode='lines', name=f"{object.ma2}-day EMA", line=dict(color='yellow', width=2)))
